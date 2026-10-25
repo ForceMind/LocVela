@@ -83,3 +83,7 @@ IDLE → PREPARING → READY → RUNNING ↔ PAUSED → STOPPING → CLEARED_WAI
 - [S9] https://lbs.qq.com/faq/miniprogramFaq/wxJsSdk
 
 参考资料提供技术依据，不直接构成本项目兼容证明。实际引入上游时另行核验、固定版本与许可证。
+
+## 12. iOS 实现校正（PR #6）
+
+固定上游实际清理接口无设备回复，不能套用前文理想化的“后端确认”步骤。iOS 适配器采用 CLEAR_SENT / sent_unconfirmed 并保留恢复标记；独立观察后的人工确认明确标为 user_confirmation_only。当前 v1 报告和 Rust 回执事件不能用发送成功替代确认。具体已实现范围与边界以 README、IOS-DEVELOPER-QUICKSTART 和 RECOVERY 为准，真机验收仍未完成。

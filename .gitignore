@@ -18,3 +18,8 @@ node_modules/
 .gradle/
 local.properties
 DerivedData/
+
+.locvela/
+iphone-id.txt
+*.udid
+xcuserdata/
