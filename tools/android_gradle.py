@@ -34,13 +34,19 @@ def validate_members(archive: zipfile.ZipFile) -> None:
     members = archive.infolist()
     if sum(item.file_size for item in members) > MAX_EXPANDED:
         raise ValueError("Gradle archive exceeds expanded-size limit")
+    seen = set()
     for item in members:
-        path = PurePosixPath(item.filename)
+        # ZipInfo.filename can already be normalized on Windows or truncated at NUL.
+        # Inspect the original header name before trusting any host-specific rewrite.
+        raw = item.orig_filename
+        path = PurePosixPath(raw)
         mode = (item.external_attr >> 16) & 0o170000
-        if (path.is_absolute() or ".." in path.parts or not path.parts
-                or path.parts[0] != f"gradle-{VERSION}" or "\\" in item.filename
-                or mode == 0o120000):
+        if (raw != item.filename or "\0" in raw or raw in seen
+                or path.is_absolute() or ".." in path.parts or not path.parts
+                or path.parts[0] != f"gradle-{VERSION}" or "\\" in raw
+                or any(":" in part for part in path.parts) or mode == 0o120000):
             raise ValueError("Unsafe Gradle archive entry")
+        seen.add(raw)
 
 
 def bootstrap(cache: Path) -> Path:

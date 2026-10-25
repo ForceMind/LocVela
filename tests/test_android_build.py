@@ -1,7 +1,9 @@
 """Host-only archive/manifest invariants, not Android runtime or hardware tests."""
 import io
+import os
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 import xml.etree.ElementTree as ET
 import zipfile
 from tools.android_gradle import SHA256, VERSION, validate_members
@@ -14,15 +16,22 @@ def manifest(relative):
     return ET.parse(ROOT / relative).getroot()
 
 
-def archive_with(name, symlink=False):
+def archive_bytes(name, symlink=False):
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
-        info = zipfile.ZipInfo(name)
+        # Construct the same raw header on every host; ZipInfo(name) normalizes
+        # backslashes on Windows before writing and would invalidate this fixture.
+        info = zipfile.ZipInfo("placeholder")
+        info.filename = name
+        info.orig_filename = name
         if symlink:
             info.external_attr = 0o120777 << 16
         archive.writestr(info, b"test")
-    buffer.seek(0)
-    return zipfile.ZipFile(buffer)
+    return buffer.getvalue()
+
+
+def archive_with(name, symlink=False):
+    return zipfile.ZipFile(io.BytesIO(archive_bytes(name, symlink)))
 
 
 class AndroidBuildContracts(unittest.TestCase):
@@ -35,8 +44,18 @@ class AndroidBuildContracts(unittest.TestCase):
             validate_members(archive)
 
     def test_rejects_traversal_and_foreign_roots(self):
-        for name in ("../escape", "/tmp/file", "gradle-8.13/../escape", "other/file", "gradle-8.13\\escape"):
-            with archive_with(name) as archive, self.assertRaises(ValueError):
+        for name in ("../escape", "/tmp/file", "gradle-8.13/../escape", "other/file",
+                     "gradle-8.13\\escape", "gradle-8.13/C:escape", "gradle-8.13/ok\0hidden"):
+            with self.subTest(name=name), archive_with(name) as archive, self.assertRaises(ValueError):
+                validate_members(archive)
+
+    def test_windows_name_normalization_does_not_hide_raw_header(self):
+        raw = archive_bytes("gradle-8.13\\escape")
+        with patch.object(os, "sep", "\\"), zipfile.ZipFile(io.BytesIO(raw)) as archive:
+            info = archive.infolist()[0]
+            self.assertEqual(info.filename, "gradle-8.13/escape")
+            self.assertEqual(info.orig_filename, "gradle-8.13\\escape")
+            with self.assertRaises(ValueError):
                 validate_members(archive)
 
     def test_rejects_symlink(self):
