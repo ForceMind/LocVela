@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "device": {
+    "alias": "s25-test",
+    "model": "Samsung Galaxy S25",
+    "os": "Android",
+    "os_build": null
+  },
+  "software": {
+    "locvela_version": "0.1.0-dev",
+    "backend_version": null,
+    "wechat_version": null,
+    "install_channel": null
+  },
+  "feature": "wechat.realtime_location",
+  "result": "unverified",
+  "evidence": {
+    "submitted": false,
+    "system_observed": false,
+    "target_observed": false,
+    "reference": null
+  },
+  "cleanup": "not_run",
+  "tested_at": null,
+  "notes": "No device test has been performed. Target OS: Android 16."
+}
