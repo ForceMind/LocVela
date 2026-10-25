@@ -24,3 +24,7 @@ iOS 本机模式尚未实现，不能继承桌面模式结果。系统构建、�
 `compatibility/*.unverified.json` 是真实状态模板。单元测试中 TEST-ONLY 的合成 passed 对象只测试校验器，绝不能作为兼容报告发布。
 
 命令 `python -m tools.report <报告.json> --wechat-version <当前完整版本>` 可检测报告版本不一致。格式合法不等于证据真实；维护者仍需核对脱敏证据原件。
+
+## iOS 清理证据补充
+
+iOS 开发 helper 已实现，但不改变上述未验证状态。上游 clear 为无回复调用，CLEAR_SENT 不能转写为 v1 报告的 cleanup=confirmed。人工恢复确认只证明用户作过该确认，不是工具自动验证。在报告结构扩展并审核独立证据前，保留开发会话的事实记录，不生成虚构的 iOS passed 报告。

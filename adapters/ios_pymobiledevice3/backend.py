@@ -86,7 +86,7 @@ class Pmd3Backend:
             raise Fault("unexpected_ios_version")
         if not await rsd.get_developer_mode_status():
             raise Fault("developer_mode_required")
-        # Register partial resources before entry; failed DVT handshakes are closed too.
+        # Keep successfully entered DVT/channel contexts in the shared cleanup stack.
         dvt = DvtProvider(rsd)
         await stack.enter_async_context(dvt)
         self.simulation = await stack.enter_async_context(LocationSimulation(dvt))

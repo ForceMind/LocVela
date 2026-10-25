@@ -90,4 +90,16 @@ class ProbeContract(unittest.TestCase):
         self.assertFalse(privacy["NSPrivacyTracking"])
         self.assertEqual(privacy["NSPrivacyCollectedDataTypes"],[])
 
+    def test_swift_six_concurrency_gate(self):
+        root=Path(__file__).resolve().parents[1]/"probes/ios"
+        project=(root/"LocVelaProbe.xcodeproj/project.pbxproj").read_text()
+        self.assertEqual(project.count("SWIFT_VERSION = 6.0;"), 2)
+        self.assertEqual(project.count("SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;"), 2)
+        source=(root/"LocVelaProbe/LocationObserver.swift").read_text()
+        self.assertEqual(source.count("nonisolated func locationManager"), 3)
+        self.assertEqual(source.count("MainActor.assumeIsolated"), 3)
+        self.assertNotIn("@unchecked", source)
+        info=plistlib.loads((root/"LocVelaProbe/Info.plist").read_bytes())
+        self.assertEqual(len(info["UISupportedInterfaceOrientations~ipad"]), 4)
+
 if __name__ == "__main__": unittest.main()

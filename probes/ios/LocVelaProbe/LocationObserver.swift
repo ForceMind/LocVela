@@ -87,27 +87,37 @@ final class LocationObserver: NSObject, ObservableObject, CLLocationManagerDeleg
         latest = nil; baseline = nil; recoveryBoundary = nil; receivedCount = 0
         diagnostic = "memory_cleared"
     }
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        authorization = manager.authorizationStatus
-        if authorization != .authorizedWhenInUse && authorization != .authorizedAlways {
-            manager.stopUpdatingLocation(); observing = false
-        }
-        activateIfPermitted()
-    }
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard observing else { return }
-        for value in locations {
-            guard CLLocationCoordinate2DIsValid(value.coordinate),
-                  value.coordinate.latitude.isFinite, value.coordinate.longitude.isFinite else { continue }
-            // Do not let an out-of-order callback replace a newer observation.
-            if let previous = latest, value.timestamp < previous.timestamp { continue }
-            latest = value
-            receivedCount += 1
-            diagnostic = "system_callback_received"
+    // This manager is initialized on MainActor. Apple delivers its delegate calls
+    // on that initialization thread's runloop. Enforce that runtime contract rather
+    // than suppressing concurrency diagnostics or marking the manager Sendable.
+    // https://developer.apple.com/videos/play/wwdc2024/10169/ (39:32-40:06)
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        MainActor.assumeIsolated {
+            authorization = self.manager.authorizationStatus
+            if authorization != .authorizedWhenInUse && authorization != .authorizedAlways {
+                self.manager.stopUpdatingLocation(); observing = false
+            }
+            activateIfPermitted()
         }
     }
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // Do not expose localized exception text or device identifiers in diagnostics.
-        diagnostic = "location_read_failed"
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        MainActor.assumeIsolated {
+            guard observing else { return }
+            for value in locations {
+                guard CLLocationCoordinate2DIsValid(value.coordinate),
+                      value.coordinate.latitude.isFinite, value.coordinate.longitude.isFinite else { continue }
+                // Do not let an out-of-order callback replace a newer observation.
+                if let previous = latest, value.timestamp < previous.timestamp { continue }
+                latest = value
+                receivedCount += 1
+                diagnostic = "system_callback_received"
+            }
+        }
+    }
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        MainActor.assumeIsolated {
+            // Do not expose localized exception text or device identifiers in diagnostics.
+            diagnostic = "location_read_failed"
+        }
     }
 }

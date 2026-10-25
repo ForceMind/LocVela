@@ -6,7 +6,7 @@
 
 Android Alpha 已实现：`apps/android/controller`（Kotlin/Compose 控制端）、`apps/android/model`（纯 JVM 定位源事务）、`probes/android`（独立只读 APK）。独立包名、进程、权限和存储；探针没有 model/controller 依赖，不通过控制端缓存取得结果。
 
-iOS SwiftUI、Tauri 桌面、pymobiledevice3 适配器及 iOS Probe 尚未实现。Android 首版不连接 Rust FFI，也未实现 Google Play services FLP 或地图/路线界面。固定点后端先验证原生平台生命周期，不复制 Rust 轨迹算法。
+iOS 已新增 `adapters/ios_pymobiledevice3` 持久 stdio 后端，以及独立前台 SwiftUI Probe。Tauri 桌面图形界面、设备准备向导和 iPhone 本机控制器尚未实现。Android 首版不连接 Rust FFI，也未实现 Google Play services FLP 或地图/路线界面。固定点后端先验证原生平台生命周期，不复制 Rust 轨迹算法。
 
 ## Android 定位事务
 
@@ -43,7 +43,11 @@ stopAndClear(sessionId)
 getBackendHealth(sessionId)
 ```
 
-iOS helper 计划使用持久开发服务连接与本机 stdio JSON Lines，消息限制 64 KiB，白名单方法，无公网端口或任意 shell；断连不能确认清理时必须未知。接口仍是设计，不表示 iOS 实现完成。
+iOS helper 使用 pymobiledevice3 11.31.0 的持久开发服务连接与本机 stdio JSON Lines，单行上限 64 KiB，输入队列上限 16，白名单方法，无控制监听端口或任意 shell。明确设备 UDID 文件和系统版本；默认 UserspaceRsdTunnel(serial=expected, autopair=False)，不会选择第一台设备或回退 native tunnel。也支持用户明确提供的可路由 RSD 端点。
+
+事件循环串行处理请求和每秒固定点，所有请求有递增 ID，会话绑定随机 token；旧请求和跨会话命令拒绝。60 秒客户端租约和 60 分钟总时长，EOF/中断尽力清理。下发前先写待恢复布尔标记；本机文件锁阻止同一设备的重复 helper，不能隔离其他工具。
+
+上游 DVT stopLocationSimulation 的 expects_reply=False。因此状态为 CLEAR_SENT，而不是 CLEARED_WAITING 或 cleanup confirmed。保留待恢复标记；只有用户明确独立核验后才接受 verify_recovery 并标记 user_confirmation_only。没有自动真实定位或微信通过。独立 Swift Probe 不保证后台持续观测，返回前台建立新订阅；来源信息缺失保持 unknown。更详细协议、数据边界和尚未实现项见 IOS-DEVELOPER-QUICKSTART。
 
 ## 报告与构建
 

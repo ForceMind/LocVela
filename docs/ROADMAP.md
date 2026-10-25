@@ -7,8 +7,8 @@
 - [x] Android fixed-point backend with write-ahead cleanup journal.
 - [x] Independent Android read-only location Probe source.
 - [x] Android build/test/lint pipeline and debug artifact packaging.
-- [ ] Independent iOS native location Probe.
-- [ ] iOS persistent development-service session and cleanup.
+- [x] Independent foreground-only iOS Probe source and Xcode project (signing/device acceptance pending).
+- [x] iOS persistent development-service helper source, clear-send semantics and recovery journal (device acceptance pending).
 - [ ] Actual S25 and iPhone hardware acceptance.
 
 Source implementation, successful CI and actual device tests are separate gates. Check the specific workflow run; no hardware pass is inferred from these checkboxes.
@@ -19,9 +19,11 @@ Implemented: Kotlin/Compose control screen, permission/mock-app onboarding, fram
 
 Remaining: S25 installation and runtime validation; 20 start/stop cycles; lock-screen/network/permission-revocation cases; energy measurements; a separately optional Google FLP adapter; production packaging/signing. Android 12+ is a build minimum, not a validated fleet. No Root requirement.
 
-## M2 — iPhone desktop closed loop (not implemented)
+## M2 — iPhone desktop closed loop (developer backend implemented, device gate pending)
 
-Tauri device management, pinned development-service adapter, trust/developer support setup, persistent connection, fixed point and route, cleanup/error handling and independent Swift Probe. First device: iPhone 16 / iOS 18.4.1. No operations on the owner's Mac or phone without explicit authorization.
+Implemented: pinned pymobiledevice3 persistent userspace/RSD/DVT adapter, explicit target/version, local bounded JSONL protocol, fixed point/hold/stop, lease, recovery journal, independent foreground Swift Probe and no-device CI. Clear is send-only, not a device acknowledgement.
+
+Remaining: Tauri UI, setup/pairing/DDI wizard, complete dependency lock, signed distribution, routes and actual iPhone 16 / iOS 18.4.1 acceptance. No operation on the owner's Mac or phone has been performed.
 
 ## M3 — compatibility and everyday controls
 

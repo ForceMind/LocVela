@@ -4,7 +4,7 @@
 
 Local-first location simulation and route control for Android and iOS, with explicit cleanup states and verifiable compatibility records.
 
-**Status: Android fixed-point alpha; physical-device and WeChat acceptance remain unverified.** The controller and independent Probe are implemented as separate Android applications. Downloadable debug APKs are produced only by a successful `android-alpha` Actions run. No iOS app/backend or desktop GUI is delivered yet.
+**Status: Android fixed-point alpha; physical-device and WeChat acceptance remain unverified.** The controller and independent Probe are implemented as separate Android applications. Downloadable debug APKs are produced only by a successful `android-alpha` Actions run. An iOS desktop JSONL helper and independent Swift Probe are now implemented as developer source; no signed IPA or desktop GUI is delivered.
 
 ## Android alpha
 
@@ -19,6 +19,12 @@ Android 12+ is the installation floor, **not** a device-support certification. F
 
 Not in this alpha: map search, GPX/route UI, Google Play services FLP, Rust FFI, or verified WeChat behavior. Framework `fused` is not Google FLP. A live service has a 60-minute cap; process death can prevent cleanup, so pending provider names survive restart and require explicit recovery.
 
+## iOS developer path
+
+The [iOS developer guide](docs/IOS-DEVELOPER-QUICKSTART.zh-CN.md) covers the persistent Python helper and independent foreground-only SwiftUI Probe. The helper pins pymobiledevice3 11.31.0, targets an explicit device and iOS version, defaults to an in-process userspace tunnel without automatic pairing/native fallback, and provides strict local JSONL commands with a lease and durable recovery intent.
+
+**DVT clear is send-only in the reviewed upstream.** `CLEAR_SENT` is not an acknowledgement or restoration proof. Recovery remains pending until an explicit user confirmation after independent observation; this never creates a WeChat pass. CI checks Python failure paths, installed dependency signatures and Swift compilation, not hardware operation. No signed/installable IPA, automatic device-setup wizard, map GUI or on-iPhone controller is provided.
+
 ## Other implemented components
 
 - Dependency-free Rust core: validated WGS-84 geometry, deterministic bounded timelines and a conservative abstract session state machine.
@@ -31,7 +37,7 @@ Not in this alpha: map search, GPX/route UI, Google Play services FLP, Rust FFI,
 | Device | Target OS | Route | Hardware validation |
 | --- | --- | --- | --- |
 | Samsung Galaxy S25 | Android 16 | Native no-root Android alpha; optional Google FLP later | Not tested |
-| iPhone 16 | iOS 18.4.1 | Desktop development-service session first, not implemented | Not tested |
+| iPhone 16 | iOS 18.4.1 | Persistent desktop development-service helper; signing/device setup still manual | Not tested |
 
 ## Build and test
 
