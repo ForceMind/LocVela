@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">LocVela Probe</string>
+    <string name="boundary">Independent Android reader. No controller cache, no mock-location permission, no WeChat pass claims.</string>
+    <string name="active">Observing framework providers</string>
+    <string name="inactive">Observation stopped · displayed readings may be old</string>
+    <string name="permissions">Grant precise location and notifications</string>
+    <string name="start">Start reading</string>
+    <string name="stop">Stop reading</string>
+    <string name="recovery_title">Baseline and recovery observation</string>
+    <string name="baseline_explanation">Before simulation, capture a fresh non-mock fix with reported accuracy of 100 m or better. After controller cleanup, mark a new observation boundary. Keep this app running while switching apps.</string>
+    <string name="capture_baseline">Capture pre-test baseline</string>
+    <string name="mark_cleanup">Controller cleared · observe new fixes</string>
+    <string name="no_auto_pass">A non-mock flag alone does not prove true location. Compare against your real surroundings; this screen never declares WeChat compatibility.</string>
+    <string name="baseline_captured">Baseline stored in memory.</string>
+    <string name="baseline_unavailable">No usable baseline. Start reading and obtain a fresh non-mock fix first.</string>
+    <string name="recovery_observing">Recovery boundary marked. Waiting for newer system fixes.</string>
+    <string name="observer_error">Observation failed. Check precise permission, system location and service state.</string>
+    <string name="waiting">Waiting for system callbacks. No fabricated or cached target is displayed.</string>
+    <string name="coordinates">WGS-84: %1$.6f, %2$.6f</string>
+    <string name="details">Age: %1$s s · accuracy: %2$s m · isMock: %3$s</string>
+    <string name="fresh">Fresh fix received after this subscription began</string>
+    <string name="stale">Old, unavailable, or unconfirmed freshness</string>
+    <string name="count">Callbacks received: %1$d</string>
+    <string name="baseline_distance">Distance from pre-test baseline: %1$.1f m</string>
+    <string name="recovery_candidate">A fresh non-mock fix arrived after the boundary. Independently confirm actual location.</string>
+    <string name="copy_redacted">Copy diagnostics without coordinates</string>
+    <string name="clear_memory">Clear in-memory readings</string>
+    <string name="privacy">Coordinates are visible on this screen but never saved or uploaded. No network permission. Reading stops after 60 minutes if the service remains alive.</string>
+    <string name="license">© 2026 LocVela contributors · AGPL-3.0-only · no warranty; redistribution subject to license terms.</string>
+    <string name="source">Source code and license</string>
+    <string name="channel_name">Independent location observation</string>
+    <string name="notification_text">Reading Android location · does not simulate a position</string>
+</resources>

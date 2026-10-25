@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">LocVela 定位探针</string>
+    <string name="boundary">独立读取 Android。不读取控制端缓存，没有模拟位置权限，不宣称微信兼容通过。</string>
+    <string name="active">正在观察系统定位源</string>
+    <string name="inactive">已停止读取 · 屏幕上的读数可能已过期</string>
+    <string name="permissions">授予精确定位与通知权限</string>
+    <string name="start">开始读取</string>
+    <string name="stop">停止读取</string>
+    <string name="recovery_title">测试前基线与恢复观察</string>
+    <string name="baseline_explanation">模拟前采集新的非模拟位置，要求报告精度不大于 100 米。控制端清理后再标记观察起点。切换应用时保持本探针运行。</string>
+    <string name="capture_baseline">采集测试前基线</string>
+    <string name="mark_cleanup">控制端已清理，开始恢复观察</string>
+    <string name="no_auto_pass">仅有非模拟标志不能证明位置真实。请结合现实位置确认，本界面不会自动宣布微信兼容通过。</string>
+    <string name="baseline_captured">基线已保存在内存。</string>
+    <string name="baseline_unavailable">没有可用基线。请先开始读取，获得新的非模拟位置。</string>
+    <string name="recovery_observing">已标记恢复观察起点，等待更新的系统位置。</string>
+    <string name="observer_error">观察失败，请检查精确定位权限、系统定位开关和服务状态。</string>
+    <string name="waiting">等待系统回调，不显示伪造结果或控制端目标缓存。</string>
+    <string name="coordinates">WGS-84：%1$.6f，%2$.6f</string>
+    <string name="details">数据年龄：%1$s 秒 · 精度：%2$s 米 · isMock：%3$s</string>
+    <string name="fresh">本轮订阅后产生的新鲜位置</string>
+    <string name="stale">数据过期、不可用或新鲜度未确认</string>
+    <string name="count">已收到回调：%1$d 次</string>
+    <string name="baseline_distance">距测试前基线：%1$.1f 米</string>
+    <string name="recovery_candidate">观察起点后已收到新的非模拟位置，请独立核对现实位置。</string>
+    <string name="copy_redacted">复制不含坐标的诊断信息</string>
+    <string name="clear_memory">清空内存读数</string>
+    <string name="privacy">坐标会显示在屏幕上，但不落盘、不上传，没有联网权限。服务正常存活时，60 分钟后停止读取。</string>
+    <string name="license">© 2026 LocVela contributors · AGPL-3.0-only · 无担保，可按许可证条款再分发。</string>
+    <string name="source">查看源码与许可证</string>
+    <string name="channel_name">独立定位观察</string>
+    <string name="notification_text">正在读取 Android 定位 · 本应用不会模拟位置</string>
+</resources>
