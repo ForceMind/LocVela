@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <!-- Dedicated, explicitly selected mock-location TEST application. The permission
+         exists only in this debug source set, never in main/release or the Probe.
+         Pinned Lint still reports MockLocation at this debug path (run 40193047585).
+         Scope the exception to this required permission; do not disable global Lint.
+         User AppOps selection is still required and Android mock flags are preserved. -->
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"
+        tools:ignore="ProtectedPermissions,MockLocation" />
+</manifest>

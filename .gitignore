@@ -14,6 +14,7 @@ node_modules/
 *.key
 /private/
 /reports/local/
+/artifacts/
 .gradle/
 local.properties
 DerivedData/

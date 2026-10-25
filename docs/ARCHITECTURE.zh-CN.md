@@ -2,21 +2,37 @@
 
 ## 已实现与预留边界
 
-`crates/locvela-core` 是无依赖纯逻辑库，不能改手机定位。`tools/report.py` 是报告结构及证据一致性校验器，不鉴定证据真实性。
+`crates/locvela-core` 是无依赖几何/轨迹/抽象会话库。`tools/report.py` 校验报告结构和证据一致性，不鉴定证据真实性。
 
-Android Kotlin/Compose、iOS SwiftUI、Tauri 桌面、pymobiledevice3 适配器和独立原生 Probe 尚未实现。不要因目录或设计文档存在而宣称可安装。
+Android Alpha 已实现：`apps/android/controller`（Kotlin/Compose 控制端）、`apps/android/model`（纯 JVM 定位源事务）、`probes/android`（独立只读 APK）。独立包名、进程、权限和存储；探针没有 model/controller 依赖，不通过控制端缓存取得结果。
 
-## 核心约定
+iOS SwiftUI、Tauri 桌面、pymobiledevice3 适配器及 iOS Probe 尚未实现。Android 首版不连接 Rust FFI，也未实现 Google Play services FLP 或地图/路线界面。固定点后端先验证原生平台生命周期，不复制 Rust 轨迹算法。
 
-Coordinate 仅接受有限 WGS-84 经纬度，内部字段私有；距离使用球面近似，不作测绘级精度声明。插值走短大圆弧，支持跨日期变更线；对跖点缺少唯一轨迹，要求加中间点。
+## Android 定位事务
 
-Route 含 2–100000 个点，相对毫秒从 0 起且严格递增。相同坐标不同时间允许停留；采样越过尾点时停在尾点，不自动循环、不自动计算真实设备时钟。当前没有 GPX 解析、地图转换、速度编辑或 FFI。
+只有可见界面明确启动才创建 location 前台服务。服务单线程串行操作，自带通知停止；START_NOT_STICKY，无开机启动，无自动续跑。每秒约一次下发，带正的墙钟与严格递增 elapsedRealtimeNanos，保留系统模拟标记。精度字段是模拟参数，不是现实准确性证明。
 
-Session 接受准备、提交、暂停、停止、清理回执及恢复观察事件。提交序号必须为正且递增；暂停态允许下发保持点。失败事件不修改为成功；清理回执只进入等待真实位置状态。
+定位源仅允许 gps/network/fused 且启动时必须实际存在。framework fused 不等于 Google FLP。默认 GPS；其他通道由用户明确选择。ProviderProperties 声明固定点可提供的能力，不伪造卫星观测或不支持字段。
 
-状态机是单会话逻辑。未来传输层必须先核对 sessionId、deviceAlias、epoch、requestId，拒绝旧会话和迟到回执，再调用 apply。序号不能代替身份验证。
+在添加测试源前，先同步写入待清理名称；部分注册或下发失败会逐项撤销，失败不跳过其他源。清理后才持久化确认，未确认记录跨进程保留。仅保存源名称，不存坐标。Android 不公开测试源归属，无法保证排除另一工具的并发改动；恢复前必须停止其他工具、重新授权 LocVela 并由用户确认。
 
-## 平台后端（待实现）
+状态：IDLE / RUNNING / HOLDING / CLEARED_WAITING / RECOVERY_REQUIRED。HOLDING 仍下发同一点；清理后进入等待独立读回，不自动变成“真实位置已恢复”。新进程看到未清理日志就阻止开始。异常日志损坏时拒绝猜测定位源，不清除任意名字。
+
+活跃会话使用带超时的 PARTIAL_WAKE_LOCK，进程正常存活时 60 分钟停止；finally/onDestroy 均不是系统强停时的保证。源码/构建成功不证明三星省电或锁屏行为。
+
+## 独立系统观察
+
+Probe 通过 LocationManager 原生回调读取可用通道；前台服务支持切换应用后观察。每个源仅保留最新读数与计数。新鲜位置要求时间戳在本轮订阅开始后，且与单调时钟的年龄在 0–10 秒内；过期或停止后不标记新鲜。
+
+基线必须由用户在模拟前明确采集；限定新鲜、非模拟、有合理精度字段。清理后用户手动标记观察起点，仅显示之后新收到的非模拟读数和距基线距离。这些观察不自动宣布恢复或微信成功。
+
+## Rust 核心约定
+
+Coordinate 只接受有限 WGS-84；球面距离不是测绘级椭球解。插值走短大圆弧并支持跨日期变更线，对跖点要求中间点。Route 含 2–100000 个点，相对毫秒从 0 起严格递增；相同坐标可停留，尾后钳制，不自动循环。当前无 GPX 和坐标系转换。
+
+Session 提交序号为正且递增；暂停可保持点。清理回执只进入等待真实位置状态。未来传输适配器须核对 sessionId/deviceAlias/epoch/requestId 后再调用 apply，拒绝旧会话回执。
+
+## 后续统一后端协议
 
 ```text
 probeCapabilities()
@@ -27,16 +43,10 @@ stopAndClear(sessionId)
 getBackendHealth(sessionId)
 ```
 
-能力分为可连接、可提交、可独立读回和实际应用可用；后者不得从前三者自动推断。Android 原生与 Google FLP 独立探测；没有 GMS 时不能伪装成 Google FLP 已启用。
+iOS helper 计划使用持久开发服务连接与本机 stdio JSON Lines，消息限制 64 KiB，白名单方法，无公网端口或任意 shell；断连不能确认清理时必须未知。接口仍是设计，不表示 iOS 实现完成。
 
-iOS 桌面 helper 采用持久开发服务连接。计划通过本机标准输入/输出 JSON Lines 消息，stderr 写脱敏日志，消息大小上限 64 KiB。只接受白名单方法；不暴露公网端口、不允许任意 shell 命令。EOF、超时、退出信号应尽力清理；设备已断连时必须报告未知。
+## 报告与构建
 
-## 观测与恢复
+兼容报告 v1 见 `schemas/report.schema.json`，语义约束由 Python 补充；cleanup=confirmed 只确认清理。未知字段拒绝，不能塞入 UDID 或原始私人坐标。
 
-独立 Probe 记录坐标系、单调/墙钟时间、精度、来源标记和设备会话。计算器自身缓存不能作为系统证据。当前 Rust 恢复事件要求新鲜、明确非软件模拟且基线一致；它是保守策略而非证明绝对真实性的算法。无法提供来源信息的环境维持待确认，后续由明确测试规程补充人工恢复事件，而不是伪填 false。
-
-## 数据协议
-
-兼容报告 v1 结构见 `schemas/report.schema.json`，语义约束由 `tools/report.py` 补充。已测结论要求完整软件版本和证据 ID，成功还要求清理确认。`cleanup=confirmed` 仅确认清理，不宣称真实位置已恢复。
-
-新增版本需显式迁移；未知字段拒绝，不能随意把 UDID、配对材料或原始坐标塞入公共报告。
+Android 使用固定 AGP/Kotlin/Compose/JDK/Gradle 版本。`android-alpha` 执行 JVM 测试、两个 APK 构建和 Lint 后才打包；构建元数据的硬件与微信字段始终为未验证，不由 CI 自动升级。完整依赖锁与生产签名属于发布工程，当前不宣称字节级可重复构建。
