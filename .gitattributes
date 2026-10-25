@@ -1,0 +1,4 @@
+# Keep canonical text and checksums identical on Linux, macOS and Windows.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
