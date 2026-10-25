@@ -6,7 +6,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- No mock-location permission, no network permission, no shared storage/UID. -->
-    <application android:allowBackup="false" android:label="@string/app_name"
+    <application android:allowBackup="false" android:dataExtractionRules="@xml/no_backup"
+        android:icon="@mipmap/ic_launcher" android:label="@string/app_name"
         android:theme="@android:style/Theme.Material.Light.NoActionBar" android:supportsRtl="true">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
