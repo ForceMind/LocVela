@@ -2,54 +2,62 @@
 
 [简体中文](README.zh-CN.md)
 
-Local-first location simulation and route control for Android and iOS, with explicit recovery states and verifiable compatibility records.
+Local-first location simulation and route control for Android and iOS, with explicit cleanup states and verifiable compatibility records.
 
-**Status: M0 engineering foundation, not an installable phone application.** No APK, IPA, device injection backend, desktop GUI, or WeChat compatibility has been delivered yet. Unit tests and successful CI do not certify hardware support.
+**Status: Android fixed-point alpha; physical-device and WeChat acceptance remain unverified.** The controller and independent Probe are implemented as separate Android applications. Downloadable debug APKs are produced only by a successful `android-alpha` Actions run. No iOS app/backend or desktop GUI is delivered yet.
 
-## Implemented in this baseline
+## Android alpha
 
-- Dependency-free Rust core: validated WGS-84 coordinates, spherical interpolation, bounded deterministic route playback, and a conservative session state machine.
-- Strict Python compatibility-report validation: evidence levels, cleanup status, version scoping, input limits, duplicate-key rejection, and stale-version detection.
-- Initial unverified device records and product, architecture, testing, privacy, recovery, and handoff documentation.
-- CI for the core and report tooling. Check the actual workflow result for the commit you use.
+| Application | Purpose |
+| --- | --- |
+| `app.locvela.controller` | WGS-84 fixed point; detected framework GPS/network/fused; foreground control; hold/resume; explicit stop; crash-recovery journal |
+| `app.locvela.probe` | Independent read-only system callbacks; freshness, mock flags, baseline distance and post-cleanup observation |
+
+Android 12+ is the installation floor, **not** a device-support certification. First physical target: Samsung Galaxy S25 / Android 16. No Root, network permission, account, telemetry, stored coordinates, hooks or mock-flag concealment. The Probe does not share a UID, code dependency, target cache or private storage with the controller.
+
+**Read [Android setup and recovery](docs/ANDROID-QUICKSTART.zh-CN.md) before installing.** Debug builds are not production releases and may be signed with a different key on each clean CI run. Clean up and verify recovery before uninstalling an old build. Artifacts contain checksums and source/build metadata.
+
+Not in this alpha: map search, GPX/route UI, Google Play services FLP, Rust FFI, or verified WeChat behavior. Framework `fused` is not Google FLP. A live service has a 60-minute cap; process death can prevent cleanup, so pending provider names survive restart and require explicit recovery.
+
+## Other implemented components
+
+- Dependency-free Rust core: validated WGS-84 geometry, deterministic bounded timelines and a conservative abstract session state machine.
+- Strict Python compatibility-report tooling: version scope, evidence levels, cleanup status, duplicate-key/input limits and stale-version checks.
+- Transactional Android adapter model and automated failure-path tests. These JVM tests do not exercise Samsung firmware.
+- Bilingual documentation, CI, initial unverified device records and implementation tasks.
 
 ## First target devices
 
-| Device | Target OS | Planned backend | Device validation |
+| Device | Target OS | Route | Hardware validation |
 | --- | --- | --- | --- |
-| Samsung Galaxy S25 | Android 16 | Native mock-location app; optional separate Google FLP adapter | Not tested |
-| iPhone 16 | iOS 18.4.1 | Desktop development-service session first | Not tested |
+| Samsung Galaxy S25 | Android 16 | Native no-root Android alpha; optional Google FLP later | Not tested |
+| iPhone 16 | iOS 18.4.1 | Desktop development-service session first, not implemented | Not tested |
 
-Root, jailbreak, external positioning hardware, and a self-hosted server are not baseline prerequisites. iPhone standalone operation is a separately gated later milestone. WeChat versions and OS build numbers are not yet recorded.
+## Build and test
 
-## Developer quick start
-
-Rust 1.85.1 (pinned), Python 3.10+; no third-party runtime dependencies in this baseline.
+Rust 1.85.1 and Python 3.10+ for the foundation:
 
 ```sh
 cargo test --workspace --all-targets --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
-cargo run -p locvela-core --example replay --locked
 python -m unittest discover -s tests -v
 python -m tools.report compatibility/android.unverified.json compatibility/ios.unverified.json
 ```
 
-The replay example only prints synthetic coordinates. It does not connect to or modify a device. `VALID ... unverified` means a report has valid structure, not that a device test passed. The validator checks consistency, not the authenticity of supplied evidence.
+For Android, also install JDK 17, SDK platform 36 and build-tools 35.0.0, then set `ANDROID_HOME`:
 
-## Documentation
+```sh
+python tools/android_gradle.py :model:test :controller:assembleDebug :probe:assembleDebug :controller:lintDebug :probe:lintDebug --no-daemon
+```
 
-- [Product specification](docs/SPEC.zh-CN.md)
-- [Architecture](docs/ARCHITECTURE.zh-CN.md)
-- [Compatibility matrix](docs/COMPATIBILITY.zh-CN.md)
-- [Device test plan](docs/TEST-PLAN.zh-CN.md)
-- [Recovery](docs/RECOVERY.zh-CN.md) · [Privacy](docs/PRIVACY.zh-CN.md)
-- [Roadmap](docs/ROADMAP.md) · [Development handoff](docs/HANDOFF.zh-CN.md)
-- [Third-party register](THIRD_PARTY_NOTICES.md) · [Contributor rules](AGENTS.md)
+The bootstrap verifies a pinned official Gradle archive. No standard `gradlew` is committed yet. The Rust replay example remains a terminal-only dry run; report `VALID` means structural consistency, not compatibility success. Consult the actual Actions run for the revision being used.
 
-## Evidence and scope
+## Evidence and documentation
 
-Submission, independent system observation, and target-application observation are separate evidence levels. A disconnect is an unknown state, not proof of restored location. System simulation may affect other apps; this is not an app-isolation feature. Device coordinates do not change public IP or server-side account regions. Use test devices/accounts with participant consent.
+Submission, independent OS observation, target-app behavior and real-location recovery remain separate. Cleanup acknowledgement is not proof of real location. System simulation may affect other apps; it does not alter public IP or server-side account regions. Use your own devices and consenting test participants.
+
+[Product specification](docs/SPEC.zh-CN.md) · [Architecture](docs/ARCHITECTURE.zh-CN.md) · [Compatibility](docs/COMPATIBILITY.zh-CN.md) · [Device tests](docs/TEST-PLAN.zh-CN.md) · [Recovery](docs/RECOVERY.zh-CN.md) · [Roadmap](docs/ROADMAP.md) · [Handoff](docs/HANDOFF.zh-CN.md)
 
 ## License
 
-Original LocVela code: **AGPL-3.0-only**, see [LICENSE](LICENSE). Preserve upstream notices for any future imported code. Reference projects are not bundled dependencies in this baseline. LocVela is independent of and not endorsed by WeChat, Samsung, or Apple.
+Original LocVela code: **AGPL-3.0-only**, see [LICENSE](LICENSE). See [third-party notices](THIRD_PARTY_NOTICES.md) for platform/build dependencies and reference projects. LocVela is independent of WeChat, Samsung and Apple, and carries no warranty.

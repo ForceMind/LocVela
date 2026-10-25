@@ -8,7 +8,9 @@ import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.location.LocationManager
 import android.os.*
-import app.locvela.model.*
+import app.locvela.model.FixedPointSession
+import app.locvela.model.Phase
+import app.locvela.model.Target
 
 /** Explicit user start, one main-thread writer, bounded lifetime, never START_STICKY. */
 class MockLocationService : Service() {

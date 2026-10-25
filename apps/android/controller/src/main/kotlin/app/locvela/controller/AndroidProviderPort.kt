@@ -10,7 +10,10 @@ import android.location.LocationManager
 import android.location.provider.ProviderProperties
 import android.os.Looper
 import android.os.Process
-import app.locvela.model.*
+import app.locvela.model.FixedPointSession
+import app.locvela.model.Journal
+import app.locvela.model.ProviderPort
+import app.locvela.model.Target
 
 fun mockAppSelected(context: Context): Boolean = runCatching {
     context.getSystemService(AppOpsManager::class.java)

@@ -2,33 +2,35 @@
 
 ## M0 — foundation and feasibility (in progress)
 
-- [x] Product specification, architecture, recovery and privacy rules.
-- [x] Bilingual README and contribution guidance.
-- [x] Dependency-free coordinate/route/session core source and automated test suite.
-- [x] Strict compatibility-report tooling and unverified device baselines.
-- [ ] Independent Android/iOS native system-location probes.
-- [ ] Minimal Android fixed-point backend and cleanup.
+- [x] Product, architecture, recovery/privacy, bilingual README and contributor rules.
+- [x] Rust geometry/route/session core and strict Python evidence tooling.
+- [x] Android fixed-point backend with write-ahead cleanup journal.
+- [x] Independent Android read-only location Probe source.
+- [x] Android build/test/lint pipeline and debug artifact packaging.
+- [ ] Independent iOS native location Probe.
 - [ ] iOS persistent development-service session and cleanup.
-- [ ] Actual device evidence on S25 and iPhone 16.
+- [ ] Actual S25 and iPhone hardware acceptance.
 
-Automated source checks are not the M0 hardware exit gate. Consult CI for the exact revision; checkboxes above describe implemented source, not device support.
+Source implementation, successful CI and actual device tests are separate gates. Check the specific workflow run; no hardware pass is inferred from these checkboxes.
 
-## M1 — Android closed loop
+## M1 — Android closed loop (alpha implemented, device gate pending)
 
-Kotlin/Compose application, permission onboarding, foreground service and notification stop, provider capability detection, separately optional Google FLP, native probe, installable APK, S25 regression evidence. No Root requirement.
+Implemented: Kotlin/Compose control screen, permission/mock-app onboarding, framework provider detection, fixed-point service, hold/resume, notification stop, transactional cleanup and crash recovery; independent foreground Probe; JVM failure tests; APK artifact pipeline.
 
-## M2 — iPhone desktop closed loop
+Remaining: S25 installation and runtime validation; 20 start/stop cycles; lock-screen/network/permission-revocation cases; energy measurements; a separately optional Google FLP adapter; production packaging/signing. Android 12+ is a build minimum, not a validated fleet. No Root requirement.
 
-Tauri device management, pinned development-service adapter, trust/developer support setup, persistent connection, fixed point and route, cleanup/error handling, signed/packaged desktop distribution where available. iPhone 16 / iOS 18.4.1 device gate.
+## M2 — iPhone desktop closed loop (not implemented)
+
+Tauri device management, pinned development-service adapter, trust/developer support setup, persistent connection, fixed point and route, cleanup/error handling and independent Swift Probe. First device: iPhone 16 / iOS 18.4.1. No operations on the owner's Mac or phone without explicit authorization.
 
 ## M3 — compatibility and everyday controls
 
-Map-provider abstraction, search/favorites, bounded GPX parser, route editor, speed/stop/repeat controls and complete per-feature WeChat records. Real-time sharing must be checked at the receiving device.
+Map abstraction, search/favorites, bounded GPX parsing, route editor, shared Rust integration, speed/stop/repeat controls and complete per-feature WeChat evidence. Receiving-device observations required for live sharing.
 
 ## M4 — iPhone standalone mode
 
-Native SwiftUI app, pairing and local development transport, actual signing/distribution workflow, background/VPN-conflict/failure tests. No claim of permanent background execution.
+Native SwiftUI app, pairing/local development transport, actual signing/distribution process, background/VPN-conflict/failure tests. No claim of permanent background execution.
 
 ## M5 — release engineering
 
-Build metadata, checksums, dependency notices, SBOM, application rollback, redacted support reports and bilingual setup guides. Do not ship a “WeChat all features supported” claim while any scoped feature lacks evidence.
+Dependency locks and notices, SBOM, production signing, checksums, build provenance, update/rollback and bilingual setup guides. Do not ship an all-WeChat-features claim while any scoped feature lacks evidence.

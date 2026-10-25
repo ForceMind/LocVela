@@ -4,38 +4,51 @@
 
 **位置由你设定，轨迹清晰可控。**
 
-本地优先的 Android / iOS 位置模拟与轨迹控制工程，以可观察状态、可靠退出和微信分项兼容验证为核心。
+本地优先的 Android / iOS 位置模拟工程，以可观察状态、清理恢复和微信分项兼容验证为核心。
 
-> 当前为 **M0 工程基线**，不是已经可以安装使用的手机产品。尚未交付 APK、IPA、设备注入后端或桌面界面，也没有完成微信真机验证。
+> 当前进入 **Android 固定点 Alpha**：已实现控制端和独立探针源码，成功的 `android-alpha` Actions 会生成两个 debug APK。**S25 真机及微信兼容仍未验证**。iOS 客户端、iOS 后端和桌面助手尚未交付。
 
-## 本次已有代码
+## 本版内容
 
-Rust 核心包含 WGS-84 坐标校验、球面距离和插值、跨日期变更线处理、有界确定性时间线及保守会话状态机。Python 工具校验兼容报告的字段、证据层级、版本、清理状态及输入边界。
+控制端 `app.locvela.controller` 支持 WGS-84 固定坐标、设备定位源检测、GPS/network/framework fused 选择、持续下发、保持/继续、前台通知停止和清理恢复。清理事务预先记录定位源名称，异常退出不自动续跑，也不把清理回执当作真实定位。
 
-两台首发目标设备：三星 Galaxy S25 / Android 16、iPhone 16 / iOS 18.4.1。完整系统构建号、微信版本和安装渠道待真机测试时记录。所有兼容状态初始化为“未验证”，不会因单元测试通过而自动改变。
+独立探针 `app.locvela.probe` 使用另一个包名/进程，无模拟位置权限、不依赖控制端代码或缓存，读取系统回调、来源标记、数据新鲜度，并支持测试前基线及清理后的观察起点。
+
+**安装前阅读 [Android 使用与恢复说明](docs/ANDROID-QUICKSTART.zh-CN.md)。** 工件包含 APK、SHA-256 与构建版本信息。debug 签名可能随干净 CI 改变，覆盖安装失败时，必须先停止模拟并验证恢复，再卸载旧版。不能为安装新版直接删除尚未清理的应用数据。
+
+最低安装版本 Android 12（API 31），不代表所有设备都经过测试。首个目标仍是三星 S25 / Android 16。
+
+尚未包含：地图搜索、GPX/路线界面、Google FLP、Rust FFI、iPhone 软件，以及微信全功能兼容结论。framework fused 不等于 Google FLP。控制会话在进程正常存活时有 60 分钟上限，强停/系统回收可能使清理无法执行，需要重新打开明确恢复。
+
+## 工程基础
+
+Rust 核心负责 WGS-84 几何、确定性轨迹和抽象状态机；Python 校验兼容报告；Android 的 Kotlin 事务模型负责原生定位源与清理日志的生命周期。JVM 单元测试不等于三星系统验证。
+
+两个应用均无 INTERNET 权限、登录、遥测或坐标落盘，不要求 Root，不修改微信安装包，不隐藏模拟来源标记。源码链接仅由用户点击后在外部浏览器打开。
 
 ## 开发验证
 
-需要 Rust 1.85.1 和 Python 3.10+，本阶段不依赖第三方运行库。
+Rust 1.85.1、Python 3.10+：
 
 ```sh
 cargo test --workspace --all-targets --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
-cargo run -p locvela-core --example replay --locked
 python -m unittest discover -s tests -v
 python -m tools.report compatibility/android.unverified.json compatibility/ios.unverified.json
 ```
 
-`replay` 只向终端输出合成坐标，不连接手机。`VALID ... unverified` 只代表报告结构合法，绝不代表功能通过。报告校验器不鉴定人工提交证据的真实性。
+Android 另需 JDK 17、SDK platform 36 / build-tools 35.0.0，并设置 ANDROID_HOME：
 
-## 路线
+```sh
+python tools/android_gradle.py :model:test :controller:assembleDebug :probe:assembleDebug :controller:lintDebug :probe:lintDebug --no-daemon
+```
 
-Android 优先无 Root 原生模拟位置；Google FLP 是单独的可选适配器。iPhone 优先桌面助手保持开发服务会话，本机独立模式后续单独验收。不要求尾插、越狱或服务器，不默认操作用户电脑、手机系统或现有 VPN。
+构建脚本下载并校验固定版 Gradle，不安装到系统目录；当前尚无标准 `gradlew`。Rust `replay` 仍只是终端合成轨迹示例。报告 `VALID` 仅表示格式一致，不代表设备通过。
 
-定位下发、独立系统读回、微信实际采用分开记录。暂停默认保持模拟点，停止执行清理；断连必须显示未知。设备坐标不等同于公网 IP、账号地区或服务端位置判断。普通系统模拟也不是“只修改微信”。
+## 后续路线
 
-## 文档
+先完成 S25 真机启停/锁屏/恢复及微信逐项验收，再补充独立 Google FLP 适配和地图/轨迹产品功能。iPhone 16 / iOS 18.4.1 先建设桌面持久开发服务会话，本机独立运行模式后续单独验收。不默认操作用户 Mac、手机系统、现有 VPN 或部署公网网站。
 
-[产品规格](docs/SPEC.zh-CN.md) · [技术架构](docs/ARCHITECTURE.zh-CN.md) · [兼容矩阵](docs/COMPATIBILITY.zh-CN.md) · [真机测试](docs/TEST-PLAN.zh-CN.md) · [恢复策略](docs/RECOVERY.zh-CN.md) · [隐私](docs/PRIVACY.zh-CN.md) · [里程碑](docs/ROADMAP.md) · [研发接管](docs/HANDOFF.zh-CN.md)
+[产品规格](docs/SPEC.zh-CN.md) · [技术架构](docs/ARCHITECTURE.zh-CN.md) · [兼容矩阵](docs/COMPATIBILITY.zh-CN.md) · [真机测试](docs/TEST-PLAN.zh-CN.md) · [恢复](docs/RECOVERY.zh-CN.md) · [里程碑](docs/ROADMAP.md) · [接管文档](docs/HANDOFF.zh-CN.md)
 
-原创代码采用 [AGPL-3.0-only](LICENSE)。参考项目尚未作为依赖引入；引入前固定版本并保留原许可，详见 [第三方登记](THIRD_PARTY_NOTICES.md)。本项目与微信、三星、Apple 无官方关联。
+原创代码采用 [AGPL-3.0-only](LICENSE)，依赖及参考项目见 [第三方登记](THIRD_PARTY_NOTICES.md)。本项目与微信、三星、Apple 无官方关联，不提供保证。

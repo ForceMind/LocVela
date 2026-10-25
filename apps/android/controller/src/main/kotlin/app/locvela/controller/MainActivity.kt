@@ -23,7 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.locvela.model.*
+import app.locvela.model.FixedPointSession
+import app.locvela.model.Phase
+import app.locvela.model.Target
 
 class MainActivity : ComponentActivity() {
     private var refresh by mutableIntStateOf(0)

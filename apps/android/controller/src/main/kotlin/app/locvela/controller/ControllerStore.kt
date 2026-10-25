@@ -5,7 +5,9 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import app.locvela.model.*
+import app.locvela.model.FixedPointSession
+import app.locvela.model.Phase
+import app.locvela.model.Target
 
 data class ControllerStatus(
     val phase: Phase = Phase.IDLE,

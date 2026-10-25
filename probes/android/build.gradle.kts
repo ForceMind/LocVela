@@ -20,8 +20,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     lint { abortOnError = true }
-    packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+    packaging { resources.merges += "/META-INF/{AL2.0,LGPL2.1}" }
+    sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/legalAssets"))
 }
+val copyLegalNotices by tasks.registering(Sync::class) {
+    from(rootProject.file("../..")) { include("LICENSE", "COPYRIGHT", "THIRD_PARTY_NOTICES.md") }
+    into(layout.buildDirectory.dir("generated/legalAssets/legal"))
+}
+tasks.named("preBuild") { dependsOn(copyLegalNotices) }
 kotlin { jvmToolchain(17) }
 dependencies {
     // Deliberately no dependency on the controller or its location model/cache.
