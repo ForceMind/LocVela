@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LocVela redacted compatibility report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "device", "software", "feature", "result", "evidence", "cleanup", "tested_at", "notes"],
+  "$defs": {
+    "text": {"type": "string", "minLength": 1, "maxLength": 256, "pattern": "\\S"},
+    "nullableText": {"anyOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]}
+  },
+  "properties": {
+    "schema_version": {"const": 1, "type": "integer"},
+    "device": {
+      "type": "object", "additionalProperties": false,
+      "required": ["alias", "model", "os", "os_build"],
+      "properties": {
+        "alias": {"$ref": "#/$defs/text"},
+        "model": {"$ref": "#/$defs/text"},
+        "os": {"enum": ["Android", "iOS"]},
+        "os_build": {"$ref": "#/$defs/nullableText"}
+      }
+    },
+    "software": {
+      "type": "object", "additionalProperties": false,
+      "required": ["locvela_version", "backend_version", "wechat_version", "install_channel"],
+      "properties": {
+        "locvela_version": {"$ref": "#/$defs/nullableText"},
+        "backend_version": {"$ref": "#/$defs/nullableText"},
+        "wechat_version": {"$ref": "#/$defs/nullableText"},
+        "install_channel": {"$ref": "#/$defs/nullableText"}
+      }
+    },
+    "feature": {"enum": ["wechat.send_location", "wechat.realtime_location", "wechat.moments", "wechat.miniapp_single", "wechat.miniapp_watch", "wechat.choose_location", "wechat.web_geolocation", "wechat.nearby"]},
+    "result": {"enum": ["unverified", "passed", "partial", "failed", "blocked", "not_applicable"]},
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["submitted", "system_observed", "target_observed", "reference"],
+      "properties": {
+        "submitted": {"type": "boolean"},
+        "system_observed": {"type": "boolean"},
+        "target_observed": {"type": "boolean"},
+        "reference": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"}]}
+      }
+    },
+    "cleanup": {"enum": ["not_run", "confirmed", "unknown", "failed"]},
+    "tested_at": {"$ref": "#/$defs/nullableText"},
+    "notes": {"$ref": "#/$defs/text"}
+  },
+  "$comment": "Run tools/report.py for evidence, timezone, complete-version and cleanup constraints. Schema validity is not a device pass."
+}

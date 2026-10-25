@@ -1,0 +1,35 @@
+name: Device compatibility evidence
+description: Report a scoped result without private location or pairing data.
+title: "[compatibility] "
+body:
+  - type: markdown
+    attributes:
+      value: "Do not attach pairing files, UDIDs, tokens, real personal routes or chats. A system blue dot is not proof that WeChat adopted the result."
+  - type: textarea
+    id: environment
+    attributes:
+      label: Exact environment
+      description: Device model, OS build, WeChat version/channel, LocVela commit and backend version. No device serial.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Feature, steps and observations
+      description: Separate backend receipt, independent system observation and receiver/target observation.
+    validations:
+      required: true
+  - type: dropdown
+    id: cleanup
+    attributes:
+      label: Cleanup acknowledgement
+      options: [not_run, confirmed, unknown, failed]
+    validations:
+      required: true
+  - type: textarea
+    id: recovery
+    attributes:
+      label: Real-location recovery observation
+      description: State what was actually checked after cleanup, or explicitly unknown.
+    validations:
+      required: true
